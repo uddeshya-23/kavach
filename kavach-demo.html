@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kavach (कवच) - AI Malware Defense System</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Noto+Sans+Devanagari:wght@400;600&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0a0f;
+            --bg-card: rgba(20, 20, 30, 0.8);
+            --accent-green: #00ff88;
+            --accent-red: #ff4444;
+            --accent-yellow: #ffaa00;
+            --accent-blue: #00aaff;
+            --accent-purple: #aa66ff;
+            --text-primary: #ffffff;
+            --text-secondary: #8888aa;
+            --glass-border: rgba(255, 255, 255, 0.1);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', sans-serif;
+            background: var(--bg-dark);
+            color: var(--text-primary);
+            min-height: 100vh;
+        }
+
+        .bg-gradient {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background:
+                radial-gradient(ellipse at 20% 20%, rgba(0, 100, 255, 0.15) 0%, transparent 50%),
+                radial-gradient(ellipse at 80% 80%, rgba(0, 255, 136, 0.1) 0%, transparent 50%);
+            z-index: -1;
+        }
+
+        header {
+            text-align: center;
+            padding: 25px 20px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .logo {
+            font-size: 2.5rem;
+            font-weight: 700;
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .logo-sanskrit {
+            font-family: 'Noto Sans Devanagari', sans-serif;
+            font-size: 1.2rem;
+            color: var(--text-secondary);
+        }
+
+        .api-status {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.75rem;
+            margin-top: 8px;
+        }
+
+        .api-status.online {
+            background: rgba(0, 255, 136, 0.2);
+            color: var(--accent-green);
+        }
+
+        .api-status.offline {
+            background: rgba(255, 68, 68, 0.2);
+            color: var(--accent-red);
+        }
+
+        .main-container {
+            display: grid;
+            grid-template-columns: 1fr 400px;
+            gap: 20px;
+            padding: 20px;
+            max-width: 1400px;
+            margin: 0 auto;
+            height: calc(100vh - 120px);
+        }
+
+        @media (max-width: 1000px) {
+            .main-container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .left-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 20px;
+            backdrop-filter: blur(20px);
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .drop-zone {
+            border: 2px dashed var(--glass-border);
+            border-radius: 12px;
+            padding: 40px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .drop-zone:hover,
+        .drop-zone.dragover {
+            border-color: var(--accent-blue);
+            background: rgba(0, 170, 255, 0.05);
+        }
+
+        .drop-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+        }
+
+        /* RIGHT SIDE - TIER PIPELINE */
+        .right-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .tier-pipeline {
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        .tier-stage {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 15px;
+            margin-bottom: 12px;
+            transition: all 0.3s ease;
+        }
+
+        .tier-stage.idle {
+            opacity: 0.5;
+        }
+
+        .tier-stage.running {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 20px rgba(0, 170, 255, 0.2);
+        }
+
+        .tier-stage.complete.detected {
+            border-color: var(--accent-red);
+            background: rgba(255, 68, 68, 0.1);
+        }
+
+        .tier-stage.complete.clean {
+            border-color: var(--accent-green);
+            background: rgba(0, 255, 136, 0.1);
+        }
+
+        .tier-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .tier-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tier-icon {
+            font-size: 1.2rem;
+        }
+
+        .tier-badge {
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .tier-badge.idle {
+            background: rgba(255, 255, 255, 0.1);
+            color: var(--text-secondary);
+        }
+
+        .tier-badge.running {
+            background: rgba(0, 170, 255, 0.3);
+            color: var(--accent-blue);
+            animation: pulse 1s infinite;
+        }
+
+        .tier-badge.detected {
+            background: rgba(255, 68, 68, 0.3);
+            color: var(--accent-red);
+        }
+
+        .tier-badge.clean {
+            background: rgba(0, 255, 136, 0.3);
+            color: var(--accent-green);
+        }
+
+        @keyframes pulse {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .tier-desc {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            margin-bottom: 8px;
+        }
+
+        .tier-findings {
+            font-size: 0.8rem;
+            color: var(--text-primary);
+        }
+
+        .finding-item {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .progress-bar {
+            height: 3px;
+            background: var(--glass-border);
+            border-radius: 2px;
+            overflow: hidden;
+            margin-top: 8px;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--accent-blue);
+            width: 0%;
+            transition: width 0.3s ease;
+        }
+
+        .tier-stage.running .progress-fill {
+            animation: progress 2s linear;
+        }
+
+        @keyframes progress {
+            from {
+                width: 0%;
+            }
+
+            to {
+                width: 100%;
+            }
+        }
+
+        /* RESULT PANEL */
+        .result-panel {
+            display: none;
+            background: var(--bg-card);
+            border-radius: 12px;
+            padding: 15px;
+        }
+
+        .result-panel.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .final-verdict {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+        }
+
+        .final-verdict.malicious {
+            background: rgba(255, 68, 68, 0.2);
+            border: 1px solid var(--accent-red);
+        }
+
+        .final-verdict.benign {
+            background: rgba(0, 255, 136, 0.2);
+            border: 1px solid var(--accent-green);
+        }
+
+        .verdict-text {
+            font-size: 1.3rem;
+            font-weight: 700;
+        }
+
+        .verdict-text.malicious {
+            color: var(--accent-red);
+        }
+
+        .verdict-text.benign {
+            color: var(--accent-green);
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--accent-blue), var(--accent-green));
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-sanitize {
+            background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+            width: 100%;
+            margin-top: 10px;
+            padding: 12px;
+        }
+
+        .history-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 10px;
+            border-bottom: 1px solid var(--glass-border);
+        }
+
+        .history-verdict {
+            font-size: 0.7rem;
+            padding: 3px 10px;
+            border-radius: 6px;
+            font-weight: 600;
+        }
+
+        .history-verdict.malicious {
+            background: rgba(255, 68, 68, 0.3);
+            color: var(--accent-red);
+        }
+
+        .history-verdict.benign {
+            background: rgba(0, 255, 136, 0.3);
+            color: var(--accent-green);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="bg-gradient"></div>
+
+    <header>
+        <div class="logo">🛡️ KAVACH</div>
+        <div class="logo-sanskrit">कवच - Multi-Tier AI Malware Defense</div>
+        <div class="api-status offline" id="apiStatus">⚫ Checking...</div>
+    </header>
+
+    <div class="main-container">
+        <!-- LEFT PANEL - DROP ZONE & HISTORY -->
+        <div class="left-panel">
+            <div class="card" style="flex: 1;">
+                <div class="card-title">📂 Drop File to Scan</div>
+                <div class="drop-zone" id="dropZone">
+                    <div class="drop-icon">🎯</div>
+                    <p style="font-size: 1.1rem; font-weight: 500;">Drop any file here</p>
+                    <p style="font-size: 0.85rem; color: var(--text-secondary); margin-top: 8px;">
+                        Watch real-time scanning on the right →
+                    </p>
+                </div>
+
+                <div class="result-panel" id="resultPanel">
+                    <div class="final-verdict" id="finalVerdict">
+                        <div>
+                            <div style="font-size: 0.85rem; color: var(--text-secondary);" id="resultFilename"></div>
+                            <div class="verdict-text" id="resultVerdictText"></div>
+                        </div>
+                        <button class="btn" onclick="resetScan()">Scan Another</button>
+                    </div>
+                    <button class="btn btn-sanitize" id="sanitizeBtn" style="display: none;" onclick="sanitizeFile()">
+                        🧹 Sanitize & Download Clean PDF
+                    </button>
+                </div>
+            </div>
+
+            <div class="card">
+                <div class="card-title">📊 Scan History</div>
+                <div class="history-list" id="historyList">
+                    <p style="color: var(--text-secondary); text-align: center; padding: 15px; font-size: 0.85rem;">
+                        Drop a file to start...
+                    </p>
+                </div>
+            </div>
+        </div>
+
+        <!-- RIGHT PANEL - TIER PIPELINE -->
+        <div class="right-panel">
+            <div class="card" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="card-title">⚡ Defense Pipeline</div>
+                <div class="tier-pipeline" id="tierPipeline">
+                    <!-- Tier 1: CDR -->
+                    <div class="tier-stage idle" id="tier-cdr">
+                        <div class="tier-header">
+                            <div class="tier-name"><span class="tier-icon">🧹</span> CDR Sanitizer</div>
+                            <span class="tier-badge idle" id="badge-cdr">WAITING</span>
+                        </div>
+                        <div class="tier-desc">Content Disarm & Reconstruction</div>
+                        <div class="tier-findings" id="findings-cdr"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 2: ML Bouncer -->
+                    <div class="tier-stage idle" id="tier-bouncer">
+                        <div class="tier-header">
+                            <div class="tier-name"><span class="tier-icon">🤖</span> ML Bouncer</div>
+                            <span class="tier-badge idle" id="badge-bouncer">WAITING</span>
+                        </div>
+                        <div class="tier-desc">Pattern & Entropy Analysis</div>
+                        <div class="tier-findings" id="findings-bouncer"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 3: LOtL -->
+                    <div class="tier-stage idle" id="tier-lotl">
+                        <div class="tier-header">
+                            <div class="tier-name"><span class="tier-icon">⚡</span> LOtL Detector</div>
+                            <span class="tier-badge idle" id="badge-lotl">WAITING</span>
+                        </div>
+                        <div class="tier-desc">Living-Off-The-Land Detection</div>
+                        <div class="tier-findings" id="findings-lotl"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 4: SBOM -->
+                    <div class="tier-stage idle" id="tier-sbom">
+                        <div class="tier-header">
+                            <div class="tier-name"><span class="tier-icon">📦</span> SBOM Scanner</div>
+                            <span class="tier-badge idle" id="badge-sbom">WAITING</span>
+                        </div>
+                        <div class="tier-desc">Supply Chain Vulnerability Check</div>
+                        <div class="tier-findings" id="findings-sbom"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 5: PE Analyzer -->
+                    <div class="tier-stage idle" id="tier-pe">
+                        <div class="tier-header">
+                            <div class="tier-name"><span class="tier-icon">🔬</span> PE Analyzer</div>
+                            <span class="tier-badge idle" id="badge-pe">WAITING</span>
+                        </div>
+                        <div class="tier-desc">Executable Binary Analysis</div>
+                        <div class="tier-findings" id="findings-pe"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
+                    <!-- Tier 6: LLM Detective -->
+                    <div class="tier-stage idle" id="tier-llm">
+                        <div class="tier-header">
+                            <div class="tier-name"><span class="tier-icon">🧠</span> LLM Detective</div>
+                            <span class="tier-badge idle" id="badge-llm">WAITING</span>
+                        </div>
+                        <div class="tier-desc">Semantic AI Analysis (Ollama)</div>
+                        <div class="tier-findings" id="findings-llm"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = 'http://localhost:5000';
+        let history = [];
+        let currentFile = null;
+
+        // Check API
+        async function checkAPI() {
+            const status = document.getElementById('apiStatus');
+            try {
+                const res = await fetch(`${API_URL}/api/health`);
+                if (res.ok) {
+                    status.textContent = '🟢 API Online';
+                    status.className = 'api-status online';
+                } else throw new Error();
+            } catch {
+                status.textContent = '🔴 Run: python kavach_api.py';
+                status.className = 'api-status offline';
+            }
+        }
+        checkAPI();
+        setInterval(checkAPI, 10000);
+
+        // Reset all tiers
+        function resetTiers() {
+            const tiers = ['cdr', 'bouncer', 'lotl', 'sbom', 'pe', 'llm'];
+            tiers.forEach(t => {
+                const stage = document.getElementById(`tier-${t}`);
+                const badge = document.getElementById(`badge-${t}`);
+                const findings = document.getElementById(`findings-${t}`);
+                stage.className = 'tier-stage idle';
+                badge.className = 'tier-badge idle';
+                badge.textContent = 'WAITING';
+                findings.innerHTML = '';
+            });
+        }
+
+        // Update tier status
+        function updateTier(tierId, status, findings = []) {
+            const stage = document.getElementById(`tier-${tierId}`);
+            const badge = document.getElementById(`badge-${tierId}`);
+            const findingsEl = document.getElementById(`findings-${tierId}`);
+
+            if (status === 'running') {
+                stage.className = 'tier-stage running';
+                badge.className = 'tier-badge running';
+                badge.textContent = 'SCANNING...';
+            } else if (status === 'detected') {
+                stage.className = 'tier-stage complete detected';
+                badge.className = 'tier-badge detected';
+                badge.textContent = '⚠️ THREAT';
+            } else if (status === 'clean') {
+                stage.className = 'tier-stage complete clean';
+                badge.className = 'tier-badge clean';
+                badge.textContent = '✓ CLEAN';
+            } else if (status === 'skipped') {
+                stage.className = 'tier-stage idle';
+                badge.className = 'tier-badge idle';
+                badge.textContent = 'SKIPPED';
+            }
+
+            if (findings.length > 0) {
+                findingsEl.innerHTML = findings.map(f =>
+                    `<div class="finding-item">• ${f}</div>`
+                ).join('');
+            }
+        }
+
+        // Scan file with streaming UI
+        async function scanFile(file) {
+            currentFile = file;
+            const dropZone = document.getElementById('dropZone');
+            const resultPanel = document.getElementById('resultPanel');
+
+            dropZone.style.display = 'none';
+            resultPanel.classList.remove('active');
+            resetTiers();
+
+            const ext = file.name.split('.').pop().toLowerCase();
+            const filename = file.name;
+
+            // Simulate streaming - show each tier running
+            const tierOrder = [];
+
+            if (ext === 'pdf') tierOrder.push('cdr');
+            tierOrder.push('bouncer');
+            if (['bat', 'cmd', 'ps1', 'vbs'].includes(ext)) tierOrder.push('lotl');
+            if (filename.toLowerCase().includes('requirements')) tierOrder.push('sbom');
+            if (['exe', 'dll'].includes(ext)) tierOrder.push('pe');
+            if (['py', 'js', 'ps1', 'vbs'].includes(ext)) tierOrder.push('llm');
+
+            // Start streaming animation
+            for (let i = 0; i < tierOrder.length; i++) {
+                updateTier(tierOrder[i], 'running');
+                await new Promise(r => setTimeout(r, 800));
+            }
+
+            // Actually scan
+            const formData = new FormData();
+            formData.append('file', file);
+
+            try {
+                const res = await fetch(`${API_URL}/api/scan`, {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await res.json();
+
+                // Update tiers with real results
+                data.tiers.forEach(tier => {
+                    let tierId = '';
+                    if (tier.name.includes('CDR')) tierId = 'cdr';
+                    else if (tier.name.includes('Bouncer')) tierId = 'bouncer';
+                    else if (tier.name.includes('LOtL')) tierId = 'lotl';
+                    else if (tier.name.includes('SBOM')) tierId = 'sbom';
+                    else if (tier.name.includes('PE')) tierId = 'pe';
+                    else if (tier.name.includes('LLM')) tierId = 'llm';
+
+                    if (tierId) {
+                        updateTier(tierId, tier.status === 'detected' ? 'detected' : 'clean', tier.findings);
+                    }
+                });
+
+                // Mark unused tiers as skipped
+                const usedTiers = data.tiers.map(t => {
+                    if (t.name.includes('CDR')) return 'cdr';
+                    if (t.name.includes('Bouncer')) return 'bouncer';
+                    if (t.name.includes('LOtL')) return 'lotl';
+                    if (t.name.includes('SBOM')) return 'sbom';
+                    if (t.name.includes('PE')) return 'pe';
+                    if (t.name.includes('LLM')) return 'llm';
+                    return '';
+                });
+                ['cdr', 'bouncer', 'lotl', 'sbom', 'pe', 'llm'].forEach(t => {
+                    if (!usedTiers.includes(t)) updateTier(t, 'skipped');
+                });
+
+                // Show final result
+                showResult(data);
+
+                history.unshift({
+                    filename: data.filename,
+                    verdict: data.verdict,
+                    time: new Date().toLocaleTimeString()
+                });
+                renderHistory();
+
+            } catch (err) {
+                alert('Scan failed. Make sure API is running.');
+                dropZone.style.display = 'block';
+            }
+        }
+
+        function showResult(data) {
+            const panel = document.getElementById('resultPanel');
+            const verdict = document.getElementById('finalVerdict');
+            const verdictText = document.getElementById('resultVerdictText');
+            const filename = document.getElementById('resultFilename');
+            const sanitizeBtn = document.getElementById('sanitizeBtn');
+
+            filename.textContent = `${data.filename} (${(data.size / 1024).toFixed(1)} KB)`;
+            verdictText.textContent = data.verdict === 'MALICIOUS' ? '⚠️ MALICIOUS' : '✅ CLEAN';
+            verdictText.className = `verdict-text ${data.verdict.toLowerCase()}`;
+            verdict.className = `final-verdict ${data.verdict.toLowerCase()}`;
+
+            sanitizeBtn.style.display = (data.can_sanitize && data.verdict === 'MALICIOUS') ? 'block' : 'none';
+
+            panel.classList.add('active');
+        }
+
+        async function sanitizeFile() {
+            if (!currentFile) return;
+            const formData = new FormData();
+            formData.append('file', currentFile);
+            try {
+                const res = await fetch(`${API_URL}/api/sanitize`, { method: 'POST', body: formData });
+                const data = await res.json();
+                if (data.status === 'success') {
+                    window.location.href = `${API_URL}${data.download_url}`;
+                    alert(`✅ Sanitized! Removed: ${data.threats_removed.join(', ')}`);
+                }
+            } catch { alert('Sanitization failed.'); }
+        }
+
+        function resetScan() {
+            document.getElementById('dropZone').style.display = 'block';
+            document.getElementById('resultPanel').classList.remove('active');
+            resetTiers();
+            currentFile = null;
+        }
+
+        function renderHistory() {
+            const container = document.getElementById('historyList');
+            if (history.length === 0) {
+                container.innerHTML = '<p style="color: var(--text-secondary); text-align: center; padding: 15px; font-size: 0.85rem;">Drop a file to start...</p>';
+                return;
+            }
+            container.innerHTML = history.slice(0, 10).map(item => `
+                <div class="history-item">
+                    <div>
+                        <div style="font-weight: 500; font-size: 0.9rem;">${item.filename}</div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary);">${item.time}</div>
+                    </div>
+                    <span class="history-verdict ${item.verdict.toLowerCase()}">${item.verdict}</span>
+                </div>
+            `).join('');
+        }
+
+        // Drop zone handlers
+        const dropZone = document.getElementById('dropZone');
+        dropZone.addEventListener('dragover', e => { e.preventDefault(); dropZone.classList.add('dragover'); });
+        dropZone.addEventListener('dragleave', () => dropZone.classList.remove('dragover'));
+        dropZone.addEventListener('drop', e => {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            if (e.dataTransfer.files[0]) scanFile(e.dataTransfer.files[0]);
+        });
+        dropZone.addEventListener('click', () => {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.onchange = e => { if (e.target.files[0]) scanFile(e.target.files[0]); };
+            input.click();
+        });
+    </script>
+</body>
+
+</html>
