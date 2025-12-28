@@ -455,6 +455,19 @@
             <div class="card" style="flex: 1; display: flex; flex-direction: column;">
                 <div class="card-title">⚡ Defense Pipeline</div>
                 <div class="tier-pipeline" id="tierPipeline">
+                    <!-- Tier 0: Signature Intelligence -->
+                    <div class="tier-stage idle" id="tier-sig">
+                        <div class="tier-header">
+                            <div class="tier-name"><span class="tier-icon">🏷️</span> Signature Intelligence</div>
+                            <span class="tier-badge idle" id="badge-sig">WAITING</span>
+                        </div>
+                        <div class="tier-desc">Hash & YARA Pattern Matching</div>
+                        <div class="tier-findings" id="findings-sig"></div>
+                        <div class="progress-bar">
+                            <div class="progress-fill"></div>
+                        </div>
+                    </div>
+
                     <!-- Tier 1: CDR -->
                     <div class="tier-stage idle" id="tier-cdr">
                         <div class="tier-header">
@@ -561,15 +574,17 @@
 
         // Reset all tiers
         function resetTiers() {
-            const tiers = ['cdr', 'bouncer', 'lotl', 'sbom', 'pe', 'llm'];
+            const tiers = ['sig', 'cdr', 'bouncer', 'lotl', 'sbom', 'pe', 'llm'];
             tiers.forEach(t => {
                 const stage = document.getElementById(`tier-${t}`);
                 const badge = document.getElementById(`badge-${t}`);
                 const findings = document.getElementById(`findings-${t}`);
-                stage.className = 'tier-stage idle';
-                badge.className = 'tier-badge idle';
-                badge.textContent = 'WAITING';
-                findings.innerHTML = '';
+                if (stage) stage.className = 'tier-stage idle';
+                if (badge) {
+                    badge.className = 'tier-badge idle';
+                    badge.textContent = 'WAITING';
+                }
+                if (findings) findings.innerHTML = '';
             });
         }
 
@@ -648,7 +663,8 @@
                 // Update tiers with real results
                 data.tiers.forEach(tier => {
                     let tierId = '';
-                    if (tier.name.includes('CDR')) tierId = 'cdr';
+                    if (tier.name.includes('Signature')) tierId = 'sig';
+                    else if (tier.name.includes('CDR')) tierId = 'cdr';
                     else if (tier.name.includes('Bouncer')) tierId = 'bouncer';
                     else if (tier.name.includes('LOtL')) tierId = 'lotl';
                     else if (tier.name.includes('SBOM')) tierId = 'sbom';
@@ -662,6 +678,7 @@
 
                 // Mark unused tiers as skipped
                 const usedTiers = data.tiers.map(t => {
+                    if (t.name.includes('Signature')) return 'sig';
                     if (t.name.includes('CDR')) return 'cdr';
                     if (t.name.includes('Bouncer')) return 'bouncer';
                     if (t.name.includes('LOtL')) return 'lotl';
@@ -670,7 +687,7 @@
                     if (t.name.includes('LLM')) return 'llm';
                     return '';
                 });
-                ['cdr', 'bouncer', 'lotl', 'sbom', 'pe', 'llm'].forEach(t => {
+                ['sig', 'cdr', 'bouncer', 'lotl', 'sbom', 'pe', 'llm'].forEach(t => {
                     if (!usedTiers.includes(t)) updateTier(t, 'skipped');
                 });
 

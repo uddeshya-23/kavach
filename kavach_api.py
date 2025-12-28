@@ -21,6 +21,8 @@ from defender.cdr import sanitize_pdf, check_has_javascript
 from defender.bouncer import scan_file as bouncer_scan
 from defender.lotl import analyze_script_file as lotl_scan
 from defender.sbom import scan_dependencies as sbom_scan
+from defender.signature import scan_signatures as signature_scan
+from defender.detective import analyze_file as llm_scan
 
 app = Flask(__name__)
 CORS(app)  # Enable CORS for frontend
@@ -69,6 +71,15 @@ def scan_file():
     }
     
     threats_found = False
+    
+    # === TIER 0: Signature Intelligence ===
+    try:
+        sig_result = signature_scan(filepath)
+        results["tiers"].append(sig_result)
+        if sig_result.get("verdict") == "MALICIOUS":
+            threats_found = True
+    except Exception as e:
+        results["tiers"].append({"name": "Signature Intelligence", "status": "error", "findings": [str(e)]})
     
     # === TIER 1: CDR Check (PDFs) ===
     if ext == ".pdf":
@@ -180,6 +191,39 @@ def scan_file():
                 "name": "SBOM Scanner",
                 "status": "error",
                 "findings": [str(e)]
+            })
+            
+    # === TIER 6: LLM Detective (Deep Analysis) ===
+    # Trigger for scripts or if other tiers flag as suspicious
+    if ext in [".py", ".js", ".ps1", ".vbs", ".bat"] or (threats_found and results["verdict"] == "SUSPICIOUS"):
+        try:
+            llm_result = llm_scan(filepath)
+            
+            explanation = llm_result.get("explanation", "").strip()
+            if not explanation:
+                explanation = "AI detected suspicious patterns but provided no text summary."
+            
+            findings = [explanation[:300] + ("..." if len(explanation) > 300 else "")]
+            
+            # Add Red Flags if available
+            if llm_result.get("red_flags"):
+                findings.extend([f"🚩 {flag}" for flag in llm_result["red_flags"]])
+                
+            tier_result = {
+                "name": "LLM Detective",
+                "status": "clean" if llm_result.get("verdict") == "BENIGN" else "detected",
+                "findings": findings
+            }
+            
+            if llm_result.get("verdict") == "MALICIOUS":
+                threats_found = True
+                
+            results["tiers"].append(tier_result)
+        except Exception as e:
+            results["tiers"].append({
+                "name": "LLM Detective",
+                "status": "error",
+                "findings": [f"Analysis failed: {str(e)}"]
             })
     
     # Set final verdict

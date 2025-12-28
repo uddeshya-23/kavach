@@ -2,7 +2,7 @@
 
 Kavach (Sanskrit for **Armor**) is a multi-tier, AI-driven malware detection and sanitization prototype. It uses a "Filter & Focus" architecture to provide high-speed classification followed by deep semantic AI analysis.
 
-![Kavach Architecture](C:/Users/91858/.gemini/antigravity/brain/e6fda481-1dc1-4cb2-9e56-f2fbd64b66bc/kavach_architecture_diagram.png)
+![Kavach Architecture](assets/architecture.png)
 
 ## 🚀 Features
 
